@@ -1,3 +1,5 @@
 
 # VSCode container config
 .devcontainer
+tesing.py
+*.pyc

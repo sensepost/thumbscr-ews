@@ -1,0 +1,2 @@
+class MissingArgumentsException(Exception):
+    pass
