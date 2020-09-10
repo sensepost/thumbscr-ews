@@ -51,8 +51,9 @@ def cli(config, username, password, dump_config, verbose, user_agent, outlook_ag
         __version__ + " (" + BaseProtocol.USERAGENT + ")"
 
     if outlook_agent and user_agent:
-        print("CANNOT USE TWO USERAGENTS AT ONCE!!!")
-        print("Please choose only --user-agent or --outlook-agent.")
+        click.secho(f'CANNOT USE TWO USERAGENTS AT ONCE!!!', fg='red')
+        click.secho(
+            f'Please use only --user-agent or --outlook-agent.', fg='red')
         quit()
 
     if outlook_agent:
@@ -186,6 +187,7 @@ def print(search, html, limit, folder, id):
                       credentials=credentials, autodiscover=True)
 
     if folder:
+        # pylint: disable=maybe-no-member
         current_folder = account.root.glob(folder)
     else:
         current_folder = account.inbox
@@ -243,6 +245,7 @@ def getattachments(id, folder, path, search, limit):
         max = 100
 
     if folder:
+        # pylint: disable=maybe-no-member
         current_folder = account.root.glob(folder)
     else:
         current_folder = account.inbox
@@ -296,6 +299,7 @@ def folders(search):
     account = Account(tbestate.username,
                       credentials=credentials, autodiscover=True)
 
+    # pylint: disable=maybe-no-member
     account.root.refresh()
 
     if search:
@@ -330,6 +334,7 @@ def objects(limit, folder):
                       credentials=credentials, autodiscover=True)
 
     if folder:
+        # pylint: disable=maybe-no-member
         current_folder = account.root.glob(folder)
     else:
         current_folder = account.inbox
@@ -362,6 +367,7 @@ def contacts(limit, folder, amount):
                       credentials=credentials, autodiscover=True)
 
     if folder:
+        # pylint: disable=maybe-no-member
         current_folder = account.contacts.glob(folder)
     else:
         current_folder = account.contacts / 'GAL Contacts'
@@ -385,4 +391,5 @@ def contacts(limit, folder, amount):
 
 
 if __name__ == '__main__':
+    # pylint: disable=no-value-for-parameter
     cli()
