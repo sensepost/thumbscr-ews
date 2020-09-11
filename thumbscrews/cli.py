@@ -12,15 +12,18 @@ from thumbscrews.__init__ import __version__
 
 import exchangelib
 import logging
+import itertools
+import string
 
 from hashlib import md5
 
-from exchangelib import Credentials, Account
-from exchangelib import Account, DistributionList
-from exchangelib import discover, BaseProtocol
+# from exchangelib import Credentials, Account
+# from exchangelib import Account, DistributionList
+# from exchangelib import discover, BaseProtocol
 from exchangelib.indexed_properties import EmailAddress
-from exchangelib import Account, EWSDateTime, FolderCollection, Q, Message
-from exchangelib import Account, FileAttachment, ItemAttachment, Message, CalendarItem, HTMLBody
+from exchangelib.services import ResolveNames
+# from exchangelib import Account, EWSDateTime, FolderCollection, Q, Message
+from exchangelib import Account, FileAttachment, ItemAttachment, Message, CalendarItem, HTMLBody, Account, items, EWSDateTime, FolderCollection, Q, Message, discover, BaseProtocol, DistributionList, Credentials
 
 # This handler will pretty-print and syntax highlight the request and response XML documents
 from exchangelib.util import PrettyXmlHandler
@@ -168,10 +171,10 @@ def mail():
 @click.option('--html', is_flag=True, help='Retrieve the HTML version of mails, default is text.')
 @click.option('--folder', '-f', help='Specify the folder to read from. Default is Inbox. eg: "Top of Information Store/Archive"')
 @click.option('--limit', '-l', type=click.INT, help='Limit the results returned to the most recent <amount>. Default 100')
-def print(search, html, limit, folder, id):
+def read(search, html, limit, folder, id):
     """
         Search for mail in folder. Default Inbox.
-        For printing mail in a nice manner. 
+        For printing mail in a nice manner.
         If you give it a folder without mail objects you may be sad.
         Check the objects command for just printing out what the library gives us.
     """
@@ -317,10 +320,10 @@ def folders(search):
 def objects(limit, folder):
     """
         Discover objects.
-        Printing out the objects the library finds. 
-        Not nice and clean like the mail option. 
-        More for exploration for future features. 
-        Hopefully the object has a string version. 
+        Printing out the objects the library finds.
+        Not nice and clean like the mail option.
+        More for exploration for future features.
+        Hopefully the object has a string version.
     """
 
     if limit:
@@ -348,46 +351,72 @@ def objects(limit, folder):
 
 
 @cli.command()
-@click.option('--folder', '-f', help='Specify the folder to read from in the contacts dir. Default is GAL Contacts. ')
-@click.option('--limit', '-l', type=click.INT, help='Limit the results returned to the most recent <amount>. Default All')
-@click.option('--amount', '-a',  is_flag=True, help='Print the amount of contacts in the folder.')
-def contacts(limit, folder, amount):
+@click.option('--dump', '-d', is_flag=True, required=True, help='Dump all the gal by searching from aa to zz unless -s given')
+@click.option('--search', '-s', help='Search in gal for a specific string')
+@click.option('--verbose', '-v',  is_flag=True, help='Verbose debugging, returns full contact objects.')
+def gal(dump, search, verbose):
     """
-        Discover Contacts. 
+        Dump GAL using EWS.
+        The slower technique used by https://github.com/dafthack/MailSniper
+        default searches from "aa" to "zz" and prints them all.
+        EWS only returns batches of 100
+        There will be doubles, so uniq after.
     """
 
-    if limit:
-        max = limit
-    else:
-        max = 100
+    if verbose:
+        logging.basicConfig(level=logging.DEBUG, handlers=[PrettyXmlHandler()])
 
     credentials = Credentials(
         tbestate.username, tbestate.password)
     account = Account(tbestate.username,
                       credentials=credentials, autodiscover=True)
 
-    if folder:
-        # pylint: disable=maybe-no-member
-        current_folder = account.contacts.glob(folder)
+    atoz = [''.join(x) for x in itertools.product(
+        string.ascii_lowercase, repeat=2)]
+
+    if search:
+        for names in ResolveNames(account.protocol).call(unresolved_entries=(search,)):
+            click.secho(f'{names}')
     else:
-        current_folder = account.contacts / 'GAL Contacts'
+        atoz = [''.join(x) for x in itertools.product(
+            string.ascii_lowercase, repeat=2)]
+        for entry in atoz:
+            for names in ResolveNames(account.protocol).call(unresolved_entries=(entry,)):
+                click.secho(f'{names}')
 
-    total = current_folder.all().count()
+    click.secho(f'-------------------------------------\n', dim=True)
 
-    if amount:
-        click.secho(f'Amount: {total}', fg='bright_blue', bold=True)
 
-    if limit:
-        max = limit
-    else:
-        max = total
+@cli.command()
+@click.option('--userfile', '-U', type=click.Path(exists=True), help='File containing all the user email addresses')
+@click.option('--passfile', '-P', type=click.Path(exists=True), help='File containing all the passwords to try')
+@click.option('--username', '-u', help='The user email to try against.')
+@click.option('--password', '-p', help='The password to try against users.')
+@click.option('--user-agents', type=click.Path(exists=True), help='A list of user agents to randomly choose from per attempt.')
+@click.option('--jitter', '-j', help='A time range to wait for after every attempt.')
+@click.option('--verbose', '-v', is_flag=True, help='This gives more information.')
+def brute(verbose, userfile, passfile, username, password, user_agents, jitter):
+    """
+        Do a brute force.
+        Made for horrizontal brute forcing mostly. 
+    """
 
-    mails = current_folder.all().order_by('-datetime_received')[:max]
+    # tbestate.validate(['username', 'password'])
 
-    for item in mails:
-        click.secho(f'Object: {item}', fg='white')
+    credentials = Credentials(
+        username, password)
 
-        click.secho(f'-------------------------------------\n', dim=True)
+    if verbose:
+        logging.basicConfig(level=logging.DEBUG, handlers=[PrettyXmlHandler()])
+
+    primary_address, protocol = discover(
+        username, credentials)
+
+    click.secho(
+        f'Autodiscover results:', bold=True, fg='yellow')
+
+    click.secho(f'{primary_address.user}', fg='bright_green')
+    click.secho(f'{protocol}', fg='bright_green')
 
 
 if __name__ == '__main__':
