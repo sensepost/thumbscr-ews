@@ -44,7 +44,7 @@ def cli(config, username, password, dump_config, verbose, user_agent, outlook_ag
     """
         \b
         thumsc-ews for Exchange Web Services
-            by @_cablethief from @sensepost
+            by @_cablethief from @sensepost of @orangecyberdef
     """
     # logging.basicConfig(level=logging.WARNING)
 
@@ -160,7 +160,7 @@ def autodiscover(verbose):
 @cli.group()
 def mail():
     """
-        Do things with emails. Like print and send.
+        Do things with emails.
     """
 
     pass
@@ -460,13 +460,13 @@ def gal(dump, search, verbose):
 
 
 @ cli.command()
-# @ click.option('--dump', '-d', is_flag=True, required=True, help='Dump all the gal by searching from aa to zz unless -s given')
 @ click.option('--email-list', '-l', type=click.Path(exists=True), required=True, help='File of inboxes to check')
-@ click.option('--full-tree', '-f', is_flag=True, help='Print access to any files, not just Inbox.')
+@ click.option('--full-tree', '-f', is_flag=True, help='Print folder tree where you may have access, not just Inbox.')
 @ click.option('--verbose', '-v',  is_flag=True, help='Verbose debugging, returns full contact objects.')
 def delegatecheck(email_list, verbose, full_tree):
     """
         Check if the current user has access to the provided mailboxes
+        By default will check if access to inbox or not. Can check for other access with --full-tree
     """
 
     if verbose:
@@ -503,6 +503,7 @@ def delegatecheck(email_list, verbose, full_tree):
                                        autodiscover=False, access_type=DELEGATE)
             # We could also print the full file structure, but you get all the public folders for users.
             if full_tree:
+                # pylint: disable=maybe-no-member
                 click.secho(
                     f'[+] Success {email} - Access to some folders.\n{delegate_account.root.tree()}', fg='green')
             else:
@@ -530,10 +531,10 @@ def delegatecheck(email_list, verbose, full_tree):
 # @click.option('--passfile', '-P', type=click.Path(exists=True), help='File containing all the passwords to try')
 # @click.option('--username', '-u', help='The user email to try against.')
 @click.option('--password', '-p', help='The password to try against users.')
-@click.option('--user-agents', type=click.Path(exists=True), help='A list of user agents to randomly choose from per attempt.')
-@click.option('--jitter', '-j', help='A time range to wait for after every attempt.')
+# @click.option('--user-agents', type=click.Path(exists=True), help='A list of user agents to randomly choose from per attempt.')
+# @click.option('--jitter', '-j', help='A time range to wait for after every attempt.')
 @click.option('--verbose', '-v', is_flag=True, help='This gives more information.')
-def brute(verbose, userfile, password, user_agents, jitter):
+def brute(verbose, userfile, password):
     """
         Do a brute force.
         Made for horrizontal brute forcing mostly.
