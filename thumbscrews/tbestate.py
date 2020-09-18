@@ -10,7 +10,7 @@ class State(object):
 
     def dictionary_updater(self, *data, **kwargs):
         """
-            Update the MQState using a new dictionary and optional
+            Update the TBEState using a new dictionary and optional
             extra kwargs.
             :param data:
             :param kwargs:
@@ -36,6 +36,7 @@ class TBEState(State):
         self.username = None
         self.password = None
         self.user_agent = None
+        self.exch_host = None
 
         # arbitrary settings. This should not really be here
         # but hey...
@@ -69,7 +70,7 @@ class TBEState(State):
             raise MissingArgumentsException
 
     def __repr__(self):
-        return '<Username: {0}, Password: {1}>'.format(self.username, self.password)
+        return '<Username: {0}, Password: {1}, Exchange: {2}, UserAgent: {3}>'.format(self.username, self.password, self.exch_host, self.user_agent)
 
 
 tbestate = TBEState()

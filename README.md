@@ -1,7 +1,7 @@
 
 <h1 align="center">
   <br>
-    📧 thumbscr-ews
+    📧 Thumbscr-EWS
   <br>
   <br>
 </h1>
@@ -12,11 +12,11 @@
 </p>
 <br>
 
-## introduction
+## Introduction
 
 `thumbscr-ews` is a small Python utility used with Exchange Web Services. Using `thumbscr-ews`, it is possible to read and search through mail, retrieve the Global Address List, and download attachments. 
 
-## features
+## Features
 
 With `thumbscr-ews`, you can:
 
@@ -27,7 +27,7 @@ With `thumbscr-ews`, you can:
 - Given that it is using EWS if Legacy authentication is enabled 2FA [can be bypassed](https://www.blackhillsinfosec.com/bypassing-two-factor-authentication-on-owa-portals/). 
 
 
-## installation - docker
+## Installation - docker
 
 A docker container for `thumbscr-ews` exists and can be used with:
 
@@ -35,7 +35,7 @@ A docker container for `thumbscr-ews` exists and can be used with:
 docker run --rm -ti cablethief/thumbscr-ews
 ```
 
-## installation - host
+## Installation - host
 
 Finally, `thumbscr-ews` itself can be installed with:
 
