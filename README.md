@@ -14,18 +14,19 @@
 
 ## Introduction
 
-`thumbscr-ews` is a small Python utility used with Exchange Web Services. Using `thumbscr-ews`, it is possible to read and search through mail, retrieve the Global Address List, and download attachments. 
+`thumbscr-ews` is a small Python utility used with Exchange Web Services. Using `thumbscr-ews`, it is possible to read and search through mail, retrieve the Global Address List, and download attachments. A lot of inspiration taken from [MailSniper](https://github.com/dafthack/MailSniper)
 
 ## Features
 
 With `thumbscr-ews`, you can:
 
 - Read emails. 
-- Search for strings in emails. (kinda)
+- Search for strings in emails. 
 - Download attachments for emails. 
 - Dump the GAL
-- Given that it is using EWS if Legacy authentication is enabled 2FA [can be bypassed](https://www.blackhillsinfosec.com/bypassing-two-factor-authentication-on-owa-portals/). 
+- Check for delegated access.
 
+Often times exchange is misconfigured allowing for EWS to bypass 2FA requirements. 
 
 ## Installation - docker
 
@@ -35,10 +36,15 @@ A docker container for `thumbscr-ews` exists and can be used with:
 docker run --rm -ti cablethief/thumbscr-ews
 ```
 
-## Installation - host
+If you do not want the docker to complain about timezones, set the TZ environment variable:
 
-Finally, `thumbscr-ews` itself can be installed with:
-
-```bash
-
+```text
+docker run --rm -ti -e TZ=Europe/London cablethief/thumbscr-ews 
 ```
+# Pics
+
+![](pics/readmail.png)
+
+![](pics/downloadattachment.png)
+
+![](pics/galsearch.png)

@@ -486,7 +486,7 @@ def delegatecheck(email_list, verbose, full_tree):
 
     ews_url = account.protocol.service_endpoint
     ews_auth_type = account.protocol.auth_type
-    primary_smtp_address = account.primary_smtp_address
+    # primary_smtp_address = account.primary_smtp_address
     # This one is optional. It is used as a hint to the initial connection and avoids one or more roundtrips
     # to guess the correct Exchange server version.
     version = account.version
@@ -558,10 +558,12 @@ def brute(verbose, userfile, password):
             if tbestate.exch_host:
                 config = Configuration(
                     server=tbestate.exch_host, credentials=credentials)
+                # pylint: disable=unused-variable
                 account = Account(username,
                                   config=config, autodiscover=False)
 
             else:
+                # pylint: disable=unused-variable
                 account = Account(username, credentials=credentials,
                                   autodiscover=True)
             click.secho(
