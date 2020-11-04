@@ -1,32 +1,23 @@
-import hashlib
-import os
-import time
-import uuid
-import json
-import click
-import yaml as yamllib
-from slugify import slugify
-
-from thumbscrews.tbestate import tbestate
-from thumbscrews.__init__ import __version__
-
-import exchangelib
-import logging
 import itertools
+import logging
+import os
 import string
-
 from hashlib import md5
 
+import click
+import exchangelib
+import yaml as yamllib
+# from exchangelib import Account, EWSDateTime, FolderCollection, Q, Message
+from exchangelib import FileAttachment, Account, discover, BaseProtocol, Credentials, Configuration, DELEGATE
 # from exchangelib import Credentials, Account
 # from exchangelib import Account, DistributionList
 # from exchangelib import discover, BaseProtocol
-from exchangelib.indexed_properties import EmailAddress
 from exchangelib.services import ResolveNames
-# from exchangelib import Account, EWSDateTime, FolderCollection, Q, Message
-from exchangelib import Account, FileAttachment, ItemAttachment, Message, CalendarItem, HTMLBody, Account, items, EWSDateTime, FolderCollection, Q, Message, discover, BaseProtocol, DistributionList, Credentials, Configuration, DELEGATE, IMPERSONATION
-
 # This handler will pretty-print and syntax highlight the request and response XML documents
 from exchangelib.util import PrettyXmlHandler
+
+from thumbscrews.__init__ import __version__
+from thumbscrews.tbestate import tbestate
 
 
 @click.group()
@@ -34,7 +25,8 @@ from exchangelib.util import PrettyXmlHandler
 @click.option('--username', '-u', help='The username to use.')
 @click.option('--password', '-p', help='The password to use.')
 @click.option('--user-agent', '-a', help='The User-Agent to use (Otherwise uses "thumbscr-ews/0.0.1").')
-@click.option('--outlook-agent', '-o', is_flag=True, help='Set the User-Agent to an Outlook one (this is still a static value that can be fingerprinted).')
+@click.option('--outlook-agent', '-o', is_flag=True,
+              help='Set the User-Agent to an Outlook one (this is still a static value that can be fingerprinted).')
 # @click.option('--exchange', '-e', help='The exchange endpoint to use. eg: https://outlook.office365.com/EWS/Exchange.asmx')
 @click.option('--dump-config', is_flag=True, help='Dump the effective configuration used.')
 @click.option('--exch-host', help='If you dont want to try autodicover set the exchange host.')
@@ -52,7 +44,7 @@ def cli(config, username, password, dump_config, verbose, user_agent, outlook_ag
         logging.basicConfig(level=logging.DEBUG, handlers=[PrettyXmlHandler()])
 
     BaseProtocol.USERAGENT = "thumbscr-ews/" + \
-        __version__ + " (" + BaseProtocol.USERAGENT + ")"
+                             __version__ + " (" + BaseProtocol.USERAGENT + ")"
 
     if outlook_agent and user_agent:
         click.secho(f'CANNOT USE TWO USERAGENTS AT ONCE!!!', fg='red')
@@ -140,19 +132,14 @@ def autodiscover(verbose):
     """
 
     tbestate.validate(['username', 'password'])
-
-    credentials = Credentials(
-        tbestate.username, tbestate.password)
+    credentials = Credentials(tbestate.username, tbestate.password)
 
     if verbose:
         logging.basicConfig(level=logging.DEBUG, handlers=[PrettyXmlHandler()])
 
-    primary_address, protocol = discover(
-        tbestate.username, credentials=credentials)
+    primary_address, protocol = discover(tbestate.username, credentials=credentials)
 
-    click.secho(
-        f'Autodiscover results:', bold=True, fg='yellow')
-
+    click.secho(f'Autodiscover results:', bold=True, fg='yellow')
     click.secho(f'{primary_address.user}', fg='bright_green')
     click.secho(f'{protocol}', fg='bright_green')
 
@@ -167,11 +154,14 @@ def mail():
 
 
 @mail.command()
-@click.option('--id', help='Get the email with the corrisponding ID')
-@click.option('--search', '-s', help='Provide a query string based on: https://docs.microsoft.com/en-us/exchange/client-developer/web-service-reference/querystring-querystringtype.')
+@click.option('--id', help='Get the email with the corresponding ID')
+@click.option('--search', '-s', help='Provide a query string based on: '
+                                     'https://docs.microsoft.com/en-us/exchange/client-developer/web-service-reference/querystring-querystringtype.')
 @click.option('--html', is_flag=True, help='Retrieve the HTML version of mails, default is text.')
-@click.option('--folder', '-f', help='Specify the folder to read from. Default is Inbox. eg: "Top of Information Store/Archive"')
-@click.option('--limit', '-l', type=click.INT, help='Limit the results returned to the most recent <amount>. Default 100')
+@click.option('--folder', '-f',
+              help='Specify the folder to read from. Default is Inbox. eg: "Top of Information Store/Archive"')
+@click.option('--limit', '-l', type=click.INT, default=100,
+              help='Limit the results returned to the most recent <amount>. Default 100')
 @click.option('--delegate', '-d', help='Read a different persons mailbox you have access to')
 def read(search, html, limit, folder, id, delegate):
     """
@@ -181,13 +171,7 @@ def read(search, html, limit, folder, id, delegate):
         Check the objects command for just printing out what the library gives us.
     """
 
-    if limit:
-        max = limit
-    else:
-        max = 100
-
-    credentials = Credentials(
-        tbestate.username, tbestate.password)
+    credentials = Credentials(tbestate.username, tbestate.password)
 
     if delegate:
         username = delegate
@@ -195,13 +179,10 @@ def read(search, html, limit, folder, id, delegate):
         username = tbestate.username
 
     if tbestate.exch_host:
-        config = Configuration(server=tbestate.exch_host,
-                               credentials=credentials)
-        account = Account(username,
-                          config=config, autodiscover=False, access_type=DELEGATE)
+        config = Configuration(server=tbestate.exch_host, credentials=credentials)
+        account = Account(username, config=config, autodiscover=False, access_type=DELEGATE)
     else:
-        account = Account(username,
-                          credentials=credentials, autodiscover=True, access_type=DELEGATE)
+        account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
 
     if folder:
         # pylint: disable=maybe-no-member
@@ -212,19 +193,17 @@ def read(search, html, limit, folder, id, delegate):
     if search:
         # mails = account.inbox.filter(Q(body__icontains=search) | Q(subject__icontains=search))
         # mails = account.inbox.filter(Q(body__icontains=search))
-        mails = current_folder.filter(search).order_by(
-            '-datetime_received')
+        mails = current_folder.filter(search).order_by('-datetime_received')
     else:
         if id:
             mails = [current_folder.get(
                 id=id)]
         else:
-            mails = current_folder.all().order_by('-datetime_received')[:max]
+            mails = current_folder.all().order_by('-datetime_received')[:limit]
 
     for item in mails:
         try:
-            click.secho(f'Subject: {item.subject}',
-                        fg='bright_blue', bold=True)
+            click.secho(f'Subject: {item.subject}', fg='bright_blue', bold=True)
             click.secho(f'Sender: {item.sender}', fg='bright_cyan')
             click.secho(f'ReceivedBy: {item.received_by}', fg='cyan')
             click.secho(f'ID: {item.id}\n', fg='bright_magenta')
@@ -236,8 +215,7 @@ def read(search, html, limit, folder, id, delegate):
             if item.has_attachments:
                 click.secho(f'Attachments:', fg='yellow', dim=True)
                 for attach in item.attachments:
-                    click.secho(f'{attach.name} - {attach.content_type}',
-                                fg='bright_yellow', dim=True)
+                    click.secho(f'{attach.name} - {attach.content_type}', fg='bright_yellow', dim=True)
         except Exception as e:
             click.secho(
                 f'Not a Mail object, probably a meeting request. {e}', fg='red', dim=True)
@@ -245,13 +223,16 @@ def read(search, html, limit, folder, id, delegate):
         click.secho(f'-------------------------------------\n', dim=True)
 
 
-@ mail.command()
-@ click.option('--id', help='Get the email attachments with the corrisponding ID. Saved as md5(id)-attachmentname.')
-@ click.option('--search', '-s', help='Provide a query string based on: https://docs.microsoft.com/en-us/exchange/client-developer/web-service-reference/querystring-querystringtype.')
-@ click.option('--path', type=click.Path(), help='Where to save your attachments. Default is current directory')
-@ click.option('--folder', '-f', help='Specify the folder to read from. Default is Inbox. eg: "Top of Information Store/Archive"')
-@ click.option('--limit', '-l', type=click.INT, help='Limit the results returned to the most recent <amount>. Default 100')
-@ click.option('--delegate', '-d', help='Read a different persons mailbox you have access to')
+@mail.command()
+@click.option('--id', help='Get the email attachments with the corrisponding ID. Saved as md5(id)-attachmentname.')
+@click.option('--search', '-s', help='Provide a query string based on: '
+                                     'https://docs.microsoft.com/en-us/exchange/client-developer/web-service-reference/querystring-querystringtype.')
+@click.option('--path', type=click.Path(), help='Where to save your attachments. Default is current directory')
+@click.option('--folder', '-f',
+              help='Specify the folder to read from. Default is Inbox. eg: "Top of Information Store/Archive"')
+@click.option('--limit', '-l', type=click.INT, default=100,
+              help='Limit the results returned to the most recent <amount>. Default 100')
+@click.option('--delegate', '-d', help='Read a different persons mailbox you have access to')
 def getattachments(id, folder, path, search, limit, delegate):
     """
         Download all the attachments from a Mail
@@ -266,18 +247,12 @@ def getattachments(id, folder, path, search, limit, delegate):
         username = tbestate.username
 
     if tbestate.exch_host:
-        config = Configuration(server=tbestate.exch_host,
-                               credentials=credentials)
+        config = Configuration(server=tbestate.exch_host, credentials=credentials)
         account = Account(username,
                           config=config, autodiscover=False, access_type=DELEGATE)
     else:
         account = Account(username,
                           credentials=credentials, autodiscover=True, access_type=DELEGATE)
-
-    if limit:
-        max = limit
-    else:
-        max = 100
 
     if folder:
         # pylint: disable=maybe-no-member
@@ -288,14 +263,12 @@ def getattachments(id, folder, path, search, limit, delegate):
     if search:
         # mails = account.inbox.filter(Q(body__icontains=search) | Q(subject__icontains=search))
         # mails = account.inbox.filter(Q(body__icontains=search))
-        mails = current_folder.filter(search).order_by(
-            '-datetime_received')
+        mails = current_folder.filter(search).order_by('-datetime_received')
     else:
         if id:
-            mails = [current_folder.get(
-                id=id)]
+            mails = [current_folder.get(id=id)]
         else:
-            mails = current_folder.all().order_by('-datetime_received')[:max]
+            mails = current_folder.all().order_by('-datetime_received')[:limit]
 
     if not path:
         path = os.getcwd()
@@ -303,8 +276,7 @@ def getattachments(id, folder, path, search, limit, delegate):
     for item in mails:
         try:
             uniqifiyer = md5(item.id.encode("utf-8")).hexdigest()
-            click.secho(f'Subject: {item.subject}',
-                        fg='bright_blue', bold=True)
+            click.secho(f'Subject: {item.subject}', fg='bright_blue', bold=True)
             click.secho(f'Sender: {item.sender}', fg='bright_cyan')
             click.secho(f'ReceivedBy: {item.received_by}', fg='cyan')
             click.secho(f'ID: {item.id}', fg='bright_magenta')
@@ -326,9 +298,9 @@ def getattachments(id, folder, path, search, limit, delegate):
         click.secho(f'-------------------------------------\n', dim=True)
 
 
-@ cli.command()
-@ click.option('--search', '-s', help='Search pattern to glob on. eg "Top of Information Store*"')
-@ click.option('--delegate', '-d', help='Read a different persons mailbox you have access to')
+@cli.command()
+@click.option('--search', '-s', help='Search pattern to glob on. eg "Top of Information Store*"')
+@click.option('--delegate', '-d', help='Read a different persons mailbox you have access to')
 # @click.option('--html', is_flag=True, help='Retrieve the HTML version of mails, default is text.')
 # @click.option('--limit', '-l', type=click.INT, help='Limit the results returned to the most recent <amount>')
 def folders(search, delegate):
@@ -344,13 +316,10 @@ def folders(search, delegate):
         username = tbestate.username
 
     if tbestate.exch_host:
-        config = Configuration(server=tbestate.exch_host,
-                               credentials=credentials)
-        account = Account(username,
-                          config=config, autodiscover=False, access_type=DELEGATE)
+        config = Configuration(server=tbestate.exch_host, credentials=credentials)
+        account = Account(username, config=config, autodiscover=False, access_type=DELEGATE)
     else:
-        account = Account(username,
-                          credentials=credentials, autodiscover=True, access_type=DELEGATE)
+        account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
 
     # pylint: disable=maybe-no-member
     account.root.refresh()
@@ -364,10 +333,12 @@ def folders(search, delegate):
         click.secho(f'-------------------------------------\n', dim=True)
 
 
-@ cli.command()
-@ click.option('--folder', '-f', help='Specify the folder to read from. Default is Inbox. eg: "Top of Information Store/Archive"')
-@ click.option('--limit', '-l', type=click.INT, help='Limit the results returned to the most recent <amount>. Default 100')
-@ click.option('--delegate', '-d', help='Read a different persons mailbox you have access to')
+@cli.command()
+@click.option('--folder', '-f',
+              help='Specify the folder to read from. Default is Inbox. eg: "Top of Information Store/Archive"')
+@click.option('--limit', '-l', type=click.INT, default=100,
+              help='Limit the results returned to the most recent <amount>. Default 100')
+@click.option('--delegate', '-d', help='Read a different persons mailbox you have access to')
 def objects(limit, folder, delegate):
     """
         Discover objects.
@@ -377,13 +348,7 @@ def objects(limit, folder, delegate):
         Hopefully the object has a string version.
     """
 
-    if limit:
-        max = limit
-    else:
-        max = 100
-
-    credentials = Credentials(
-        tbestate.username, tbestate.password)
+    credentials = Credentials(tbestate.username, tbestate.password)
 
     if delegate:
         username = delegate
@@ -391,13 +356,10 @@ def objects(limit, folder, delegate):
         username = tbestate.username
 
     if tbestate.exch_host:
-        config = Configuration(server=tbestate.exch_host,
-                               credentials=credentials)
-        account = Account(username,
-                          config=config, autodiscover=False, access_type=DELEGATE)
+        config = Configuration(server=tbestate.exch_host, credentials=credentials)
+        account = Account(username, config=config, autodiscover=False, access_type=DELEGATE)
     else:
-        account = Account(username,
-                          credentials=credentials, autodiscover=True, access_type=DELEGATE)
+        account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
 
     if folder:
         # pylint: disable=maybe-no-member
@@ -405,18 +367,18 @@ def objects(limit, folder, delegate):
     else:
         current_folder = account.inbox
 
-    mails = current_folder.all()[:max]
+    mails = current_folder.all()[:limit]
 
     for item in mails:
         click.secho(f'Object: {item}', fg='white')
-
         click.secho(f'-------------------------------------\n', dim=True)
 
 
-@ cli.command()
-@ click.option('--dump', '-d', is_flag=True, required=True, help='Dump all the gal by searching from aa to zz unless -s given')
-@ click.option('--search', '-s', help='Search in gal for a specific string')
-@ click.option('--verbose', '-v',  is_flag=True, help='Verbose debugging, returns full contact objects.')
+@cli.command()
+@click.option('--dump', '-d', is_flag=True, required=True,
+              help='Dump all the gal by searching from aa to zz unless -s given')
+@click.option('--search', '-s', help='Search in gal for a specific string')
+@click.option('--verbose', '-v', is_flag=True, help='Verbose debugging, returns full contact objects.')
 def gal(dump, search, verbose):
     """
         Dump GAL using EWS.
@@ -429,29 +391,22 @@ def gal(dump, search, verbose):
     if verbose:
         logging.basicConfig(level=logging.DEBUG, handlers=[PrettyXmlHandler()])
 
-    credentials = Credentials(
-        tbestate.username, tbestate.password)
-
+    credentials = Credentials(tbestate.username, tbestate.password)
     username = tbestate.username
 
     if tbestate.exch_host:
-        config = Configuration(server=tbestate.exch_host,
-                               credentials=credentials)
-        account = Account(username,
-                          config=config, autodiscover=False, access_type=DELEGATE)
+        config = Configuration(server=tbestate.exch_host, credentials=credentials)
+        account = Account(username, config=config, autodiscover=False, access_type=DELEGATE)
     else:
-        account = Account(username,
-                          credentials=credentials, autodiscover=True, access_type=DELEGATE)
+        account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
 
-    atoz = [''.join(x) for x in itertools.product(
-        string.ascii_lowercase, repeat=2)]
+    atoz = [''.join(x) for x in itertools.product(string.ascii_lowercase, repeat=2)]
 
     if search:
         for names in ResolveNames(account.protocol).call(unresolved_entries=(search,)):
             click.secho(f'{names}')
     else:
-        atoz = [''.join(x) for x in itertools.product(
-            string.ascii_lowercase, repeat=2)]
+        atoz = [''.join(x) for x in itertools.product(string.ascii_lowercase, repeat=2)]
         for entry in atoz:
             for names in ResolveNames(account.protocol).call(unresolved_entries=(entry,)):
                 click.secho(f'{names}')
@@ -459,10 +414,10 @@ def gal(dump, search, verbose):
     click.secho(f'-------------------------------------\n', dim=True)
 
 
-@ cli.command()
-@ click.option('--email-list', '-l', type=click.Path(exists=True), required=True, help='File of inboxes to check')
-@ click.option('--full-tree', '-f', is_flag=True, help='Print folder tree where you may have access, not just Inbox.')
-@ click.option('--verbose', '-v',  is_flag=True, help='Verbose debugging, returns full contact objects.')
+@cli.command()
+@click.option('--email-list', '-l', type=click.Path(exists=True), required=True, help='File of inboxes to check')
+@click.option('--full-tree', '-f', is_flag=True, help='Print folder tree where you may have access, not just Inbox.')
+@click.option('--verbose', '-v', is_flag=True, help='Verbose debugging, returns full contact objects.')
 def delegatecheck(email_list, verbose, full_tree):
     """
         Check if the current user has access to the provided mailboxes
@@ -472,17 +427,13 @@ def delegatecheck(email_list, verbose, full_tree):
     if verbose:
         logging.basicConfig(level=logging.DEBUG, handlers=[PrettyXmlHandler()])
 
-    credentials = Credentials(
-        tbestate.username, tbestate.password)
+    credentials = Credentials(tbestate.username, tbestate.password)
 
     if tbestate.exch_host:
-        config = Configuration(server=tbestate.exch_host,
-                               credentials=credentials)
-        account = Account(tbestate.username,
-                          config=config, autodiscover=False)
+        config = Configuration(server=tbestate.exch_host, credentials=credentials)
+        account = Account(tbestate.username, config=config, autodiscover=False)
     else:
-        account = Account(tbestate.username, credentials=credentials,
-                          autodiscover=True)
+        account = Account(tbestate.username, credentials=credentials, autodiscover=True)
 
     ews_url = account.protocol.service_endpoint
     ews_auth_type = account.protocol.auth_type
@@ -508,20 +459,15 @@ def delegatecheck(email_list, verbose, full_tree):
                     f'[+] Success {email} - Access to some folders.\n{delegate_account.root.tree()}', fg='green')
             else:
                 delegate_account.inbox
-                click.secho(
-                    f'[+] Success {email} - Could access inbox', fg='green')
+                click.secho(f'[+] Success {email} - Could access inbox', fg='green')
         except exchangelib.errors.ErrorItemNotFound:
-            click.secho(
-                f'[-] {email} - Failure inbox not accessable', dim=True, fg='red')
+            click.secho(f'[-] {email} - Failure inbox not accessible', dim=True, fg='red')
         except exchangelib.errors.AutoDiscoverFailed:
-            click.secho(
-                f'[-] {email} - Failure AutoDiscoverFailed', dim=True, fg='red')
+            click.secho(f'[-] {email} - Failure AutoDiscoverFailed', dim=True, fg='red')
         except exchangelib.errors.ErrorNonExistentMailbox:
-            click.secho(
-                f'[-] {email} - Failure ErrorNonExistentMailbox', dim=True, fg='red')
+            click.secho(f'[-] {email} - Failure ErrorNonExistentMailbox', dim=True, fg='red')
         except exchangelib.errors.ErrorAccessDenied:
-            click.secho(
-                f'[-] {email} - Failure ErrorAccessDenied', dim=True, fg='red')
+            click.secho(f'[-] {email} - Failure ErrorAccessDenied', dim=True, fg='red')
 
     click.secho(f'-------------------------------------\n', dim=True)
 
@@ -559,13 +505,11 @@ def brute(verbose, userfile, password):
                 config = Configuration(
                     server=tbestate.exch_host, credentials=credentials)
                 # pylint: disable=unused-variable
-                account = Account(username,
-                                  config=config, autodiscover=False)
+                account = Account(username, config=config, autodiscover=False)
 
             else:
                 # pylint: disable=unused-variable
-                account = Account(username, credentials=credentials,
-                                  autodiscover=True)
+                account = Account(username, credentials=credentials, autodiscover=True)
             click.secho(
                 f'[+] Success {username}:{password}', fg='green')
         except exchangelib.errors.UnauthorizedError:
