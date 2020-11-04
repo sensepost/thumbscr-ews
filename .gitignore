@@ -1,3 +1,5 @@
+.idea/
+*egg-info/
 
 # VSCode container config
 .devcontainer
