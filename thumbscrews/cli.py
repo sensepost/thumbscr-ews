@@ -461,7 +461,7 @@ def gal(dump, search, verbose):
 
 @ cli.command()
 @ click.option('--email-list', '-l', type=click.Path(exists=True), required=True, help='File of inboxes to check')
-@ click.option('--full-tree', '-f', is_flag=True, help='Print folder tree where you may have access, not just Inbox.')
+@ click.option('--full-tree', '-f', is_flag=True, help='Try print folder tree for the account.')
 @ click.option('--verbose', '-v',  is_flag=True, help='Verbose debugging, returns full contact objects.')
 def delegatecheck(email_list, verbose, full_tree):
     """
@@ -507,9 +507,13 @@ def delegatecheck(email_list, verbose, full_tree):
                 click.secho(
                     f'[+] Success {email} - Access to some folders.\n{delegate_account.root.tree()}', fg='green')
             else:
-                delegate_account.inbox
+                #delegate_account.inbox
+                pl = []
+                for p in delegate_account.inbox.permission_set.permissions:
+                    if p.permission_level != "None":
+                        pl.append(p.permission_level)
                 click.secho(
-                    f'[+] Success {email} - Could access inbox', fg='green')
+                    f'[+] Success {email} - Could access inbox - Permissions: {pl}', fg='green')
         except exchangelib.errors.ErrorItemNotFound:
             click.secho(
                 f'[-] {email} - Failure inbox not accessable', dim=True, fg='red')
