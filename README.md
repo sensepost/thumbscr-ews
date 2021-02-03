@@ -51,5 +51,4 @@ docker run --rm -ti -e TZ=Europe/London cablethief/thumbscr-ews
 
 ## Todo
 
- - Try get exactly what delegated access
  - Implement more MailSniper functions 
