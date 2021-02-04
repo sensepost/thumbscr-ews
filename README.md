@@ -41,6 +41,15 @@ If you do not want the docker to complain about timezones, set the TZ environmen
 ```text
 docker run --rm -ti -e TZ=Europe/London cablethief/thumbscr-ews 
 ```
+
+### Installation - Other
+
+You can install localy using:
+
+```
+python setup.py install
+```
+
 # Pics
 
 ![](pics/readmail.png)
