@@ -63,8 +63,8 @@ class TBEState(State):
         # ensure we have everything we need
         if None in [v for k, v in vars(tbestate).items() if k in keys]:
             click.secho(
-                'Queue manager configuration object: {0}'.format(self), dim=True)
-            click.secho('Not all of the required MQ arguments are '
+                'Configuration object: {0}'.format(self), dim=True)
+            click.secho('Not all of the required arguments are '
                         'set via flags or config file options: {0}'.format(', '.join(keys)), fg='red')
 
             raise MissingArgumentsException
