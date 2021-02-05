@@ -416,9 +416,11 @@ def gal(dump, search, verbose):
 
 @ cli.command()
 @ click.option('--email-list', '-l', type=click.Path(exists=True), required=True, help='File of inboxes to check')
-@ click.option('--full-tree', '-f', is_flag=True, help='Try print folder tree for the account.')
+@ click.option('--full-tree', '-ft', is_flag=True, help='Try print folder tree for the account.')
 @ click.option('--verbose', '-v',  is_flag=True, help='Verbose debugging, returns full contact objects.')
-def delegatecheck(email_list, verbose, full_tree):
+@click.option('--folder', '-f',
+              help='Specify the folder to check permissions. Default is Inbox. eg: "Top of Information Store/Archive"')
+def delegatecheck(email_list, verbose, full_tree, folder):
     """
         Check if the current user has access to the provided mailboxes
         By default will check if access to inbox or not. Can check for other access with --full-tree
@@ -457,6 +459,19 @@ def delegatecheck(email_list, verbose, full_tree):
                 # pylint: disable=maybe-no-member
                 click.secho(
                     f'[+] Success {email} - Access to some folders.\n{delegate_account.root.tree()}', fg='green')
+            elif folder:
+                folders = delegate_account.root.glob(folder)
+                if len(folders.folders) == 0:
+                    click.secho(
+                        f'[-] Failure {email} - No folder found', dim=True, fg='red')
+                else:
+                    for current_folder in delegate_account.root.glob(folder):
+                        pl = []
+                        for p in current_folder.permission_set.permissions:
+                            if p.permission_level != "None":
+                                pl.append(p.permission_level)
+                        click.secho(
+                            f'[+] Success {email} - Could access {current_folder} - Permissions: {pl}', fg='green')
             else:
                 #delegate_account.inbox
                 pl = []
@@ -473,6 +488,9 @@ def delegatecheck(email_list, verbose, full_tree):
             click.secho(f'[-] {email} - Failure ErrorNonExistentMailbox', dim=True, fg='red')
         except exchangelib.errors.ErrorAccessDenied:
             click.secho(f'[-] {email} - Failure ErrorAccessDenied', dim=True, fg='red')
+        except exchangelib.errors.ErrorImpersonateUserDenied:
+            click.secho(f'[-] {email} - Failure ErrorImpersonateUserDenied', dim=True, fg='red')
+
 
     click.secho(f'-------------------------------------\n', dim=True)
 
