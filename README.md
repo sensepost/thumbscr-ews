@@ -44,7 +44,7 @@ docker run --rm -ti -e TZ=Europe/London cablethief/thumbscr-ews
 
 ### Installation - Other
 
-You can install localy using:
+You can install locally using:
 
 ```
 python setup.py install
