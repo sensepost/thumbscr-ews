@@ -76,7 +76,7 @@ thumbscr-ews -C config.yml --exch-host outlook.office365.com gal
 the caveat is that it is printing results as it gets them, due to the way that the search works (Looking from aa to zz) this could mean many doubles so you should always `sort -u` at the end when you have your emails. 
 you can also search for specific strings in the GAL with `--search`. 
 
-## Delegate check
+## Delegatecheck
 
 With a list of emails, you can provide them to thumbscr-ews to see if you may have further access. 
 
@@ -118,4 +118,150 @@ root
 ├── ApplicationDataRoot
 │   ├── 33b68b23-a6c2-4684-99a0-fa3832792226
 ...
+```
+
+## Mail
+
+Plans are to implement more things here, but for now there is the ability to read mails and get the associated attachments. 
+
+```
+Usage: thumbscr-ews mail [OPTIONS] COMMAND [ARGS]...
+
+  Do things with emails.
+
+Options:
+  --help  Show this message and exit.
+
+Commands:
+  getattachments  Download all the attachments from a Mail
+  read            Search for mail in folder.
+```
+
+### Mail Read
+
+```
+Usage: thumbscr-ews mail read [OPTIONS]
+
+  Search for mail in folder. Default Inbox. For printing mail in a nice
+  manner. If you give it a folder without mail objects you may be sad. Check
+  the objects command for just printing out what the library gives us.
+
+Options:
+  --id TEXT            Get the email with the corresponding ID
+  -s, --search TEXT    Provide a query string based on:
+                       https://docs.microsoft.com/en-us/exchange/client-
+                       developer/web-service-reference/querystring-
+                       querystringtype.
+
+  --html               Retrieve the HTML version of mails, default is text.
+  -f, --folder TEXT    Specify the folder to read from. Default is Inbox. eg:
+                       "Top of Information Store/Archive"
+
+  -l, --limit INTEGER  Limit the results returned to the most recent <amount>.
+                       Default 100
+
+  -d, --delegate TEXT  Read a different persons mailbox you have access to
+  --help               Show this message and exit.
+```
+
+If you want to read mail from a specific folder you can list the top `--limit` from that folder, or `--search` for specific mails. 
+Once listed, the mails will also output their ID which can be used to query using the `--id` flag in future. 
+
+You may also access another users mailbox in the same way by providing the `--delegate` flag. 
+
+### Mail Getattachments
+
+```
+Usage: thumbscr-ews mail getattachments [OPTIONS]
+
+  Download all the attachments from a Mail
+
+Options:
+  --id TEXT            Get the email attachments with the corrisponding ID.
+                       Saved as md5(id)-attachmentname.
+
+  -s, --search TEXT    Provide a query string based on:
+                       https://docs.microsoft.com/en-us/exchange/client-
+                       developer/web-service-reference/querystring-
+                       querystringtype.
+
+  --path PATH          Where to save your attachments. Default is current
+                       directory
+
+  -f, --folder TEXT    Specify the folder to read from. Default is Inbox. eg:
+                       "Top of Information Store/Archive"
+
+  -l, --limit INTEGER  Limit the results returned to the most recent <amount>.
+                       Default 100
+
+  -d, --delegate TEXT  Read a different persons mailbox you have access to
+  --help               Show this message and exit.
+```
+
+Getattachments works in the exact same way as `read` however it will download any attachments associated with a mail it retrieves. So you can collect the top 10 mails Attachments with `-l 10` or you can specify with an `--id` which I would recommend to be a bit more targeted. The `--search` command acts the same and searches for words in mails, however it will then download the attachments in the found mails. 
+
+## Folders
+
+```
+Usage: thumbscr-ews folders [OPTIONS]
+
+  Print exchange file structure.
+
+Options:
+  -s, --search TEXT    Search pattern to glob on. eg "Top of Information
+                       Store*"
+
+  -d, --delegate TEXT  Read a different persons mailbox you have access to
+  --help               Show this message and exit.
+```
+
+Folders will print out the folder structure of the mailbox. The `--search` flag can be used to filter the output down a particular branch, so that rather than printing out the entire folder structure we can filter to areas that we are interested in rather than the entire root structure.
+
+```
+thumbscr-ews ... folders --search 'Top of Information Store'
+
+Top of Information Store
+├── Archive
+├── Calendar
+│   ├── Birthdays
+│   └── United States holidays
+├── Contacts
+│   ├── Companies
+│   ├── GAL Contacts
+│   ├── Organizational Contacts
+│   ├── PeopleCentricConversation Buddies
+│   ├── Recipient Cache
+│   ├── {06967759-274D-40B2-A3EB-D7F9E73727D7}
+│   └── {A9E2BC46-B3A0-4243-B315-60D991004455}
+├── Conversation Action Settings
+├── Conversation History
+...
+```
+
+## Objects
+
+```
+Usage: thumbscr-ews objects [OPTIONS]
+
+  Discover objects. Printing out the objects the library finds. Not nice and
+  clean like the mail option. More for exploration for future features.
+  Hopefully the object has a string version.
+
+Options:
+  -f, --folder TEXT    Specify the folder to read from. Default is Inbox. eg:
+                       "Top of Information Store/Archive"
+
+  -l, --limit INTEGER  Limit the results returned to the most recent <amount>.
+                       Default 100
+
+  -d, --delegate TEXT  Read a different persons mailbox you have access to
+  --help               Show this message and exit.
+```
+
+Not all folders contain only mails, for these things I chose to generically print the object retrieved from `exchangelib`. This allows for the support of random objects without too much overhead. 
+as an example a `contact` object can be printed out without fancy frills as with mail which is a more core item. (This is not the GAL however, for that we need to use the ResolveNames call)
+
+```
+thumbscr-ews ... objects -f 'AllContacts'     
+Object: Contact(mime_content=b'BEGIN:VCARD\r\nPROFILE:VCARD\r\nVERSION:3.0\r\nMAILER:Microsoft Exchange\r\nPRODID:Microsoft Exchange\r\nFN:Michael Kruger\r\nN:;;;;\r\nEMAIL;TYPE=INTERNET:michael.kruger@orangecyberdefense.com\r\nORG:;\r\nCLASS:PUBLIC\r\nADR;TYPE=WORK:;;;;;;\r\nLABEL;TYPE=WORK:\r\nADR;TYPE=HOME:;;;;;;\r\nADR;TYPE=POSTAL:;;;;;;\r\nREV;VALUE=DATE-TIME:2020-09-16T19:17:43,440Z\r\nEND:VCARD\r\n', ...
 ```

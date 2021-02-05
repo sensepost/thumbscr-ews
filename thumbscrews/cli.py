@@ -77,7 +77,7 @@ def cli(config, username, password, dump_config, verbose, user_agent, outlook_ag
         click.secho('-------------------------------------\n', dim=True)
 
 
-@cli.command()
+@cli.command(no_args_is_help=True)
 def version():
     """
         Prints the current thumbsc-ews version
@@ -374,7 +374,7 @@ def objects(limit, folder, delegate):
         click.secho(f'-------------------------------------\n', dim=True)
 
 
-@cli.command()
+@cli.command(no_args_is_help=True)
 @click.option('--dump', '-d', is_flag=True, required=True,
               help='Dump all the gal by searching from aa to zz unless -s given')
 @click.option('--search', '-s', help='Search in gal for a specific string')
@@ -414,10 +414,11 @@ def gal(dump, search, verbose):
     click.secho(f'-------------------------------------\n', dim=True)
 
 
-@ cli.command()
-@ click.option('--email-list', '-l', type=click.Path(exists=True), required=True, help='File of inboxes to check')
-@ click.option('--full-tree', '-ft', is_flag=True, help='Try print folder tree for the account.')
-@ click.option('--verbose', '-v',  is_flag=True, help='Verbose debugging, returns full contact objects.')
+
+@click.command(no_args_is_help=True)
+@click.option('--email-list', '-l', type=click.Path(exists=True), required=True, help='File of inboxes to check')
+@click.option('--full-tree', '-ft', is_flag=True, help='Try print folder tree for the account.')
+@click.option('--verbose', '-v',  is_flag=True, help='Verbose debugging, returns full contact objects.')
 @click.option('--folder', '-f',
               help='Specify the folder to check permissions. Default is Inbox. eg: "Top of Information Store/Archive"')
 def delegatecheck(email_list, verbose, full_tree, folder):
@@ -495,7 +496,7 @@ def delegatecheck(email_list, verbose, full_tree, folder):
     click.secho(f'-------------------------------------\n', dim=True)
 
 
-@cli.command()
+@cli.command(no_args_is_help=True)
 @click.option('--userfile', '-U', type=click.Path(exists=True), help='File containing all the user email addresses')
 # @click.option('--passfile', '-P', type=click.Path(exists=True), help='File containing all the passwords to try')
 # @click.option('--username', '-u', help='The user email to try against.')
