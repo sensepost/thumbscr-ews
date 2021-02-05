@@ -30,7 +30,7 @@ Often times exchange is misconfigured allowing for EWS to bypass 2FA requirement
 
 ## Usage
 
-Please see [Usage.md](Usage.md).
+Please see [Usage.md](USAGE.md).
 
 ## Installation - docker
 
