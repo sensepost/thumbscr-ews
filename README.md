@@ -28,6 +28,10 @@ With `thumbscr-ews`, you can:
 
 Often times exchange is misconfigured allowing for EWS to bypass 2FA requirements. 
 
+## Usage
+
+Please see [Usage.md](Usage.md).
+
 ## Installation - docker
 
 A docker container for `thumbscr-ews` exists and can be used with:
