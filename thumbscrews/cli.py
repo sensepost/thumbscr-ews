@@ -131,17 +131,20 @@ def autodiscover(verbose):
         Authenticate and go through autodiscover.
     """
 
-    tbestate.validate(['username', 'password'])
-    credentials = Credentials(tbestate.username, tbestate.password)
+    try:
+        tbestate.validate(['username', 'password'])
+        credentials = Credentials(tbestate.username, tbestate.password)
 
-    if verbose:
-        logging.basicConfig(level=logging.DEBUG, handlers=[PrettyXmlHandler()])
+        if verbose:
+            logging.basicConfig(level=logging.DEBUG, handlers=[PrettyXmlHandler()])
 
-    primary_address, protocol = discover(tbestate.username, credentials=credentials)
+        primary_address, protocol = discover(tbestate.username, credentials=credentials)
 
-    click.secho(f'Autodiscover results:', bold=True, fg='yellow')
-    click.secho(f'{primary_address.user}', fg='bright_green')
-    click.secho(f'{protocol}', fg='bright_green')
+        click.secho(f'Autodiscover results:', bold=True, fg='yellow')
+        click.secho(f'{primary_address.user}', fg='bright_green')
+        click.secho(f'{protocol}', fg='bright_green')
+    except exchangelib.errors.AutoDiscoverFailed:
+        click.secho(f'Autodiscover failed, try with -v for more information:', bold=True, fg='red')
 
 
 @cli.group()
