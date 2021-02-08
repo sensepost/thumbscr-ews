@@ -1,13 +1,14 @@
 [[source]]
-name = "pypi"
 url = "https://pypi.org/simple"
 verify_ssl = true
+name = "pypi"
+
+[packages]
+click = "==7.1.2"
+exchangelib = "==3.2.1"
+PyYAML = "==5.3.1"
 
 [dev-packages]
 
-[packages]
-click = "*"
-exchangelib = "*"
-
 [requires]
-python_version = "3.8"
+python_version = "3.9"
