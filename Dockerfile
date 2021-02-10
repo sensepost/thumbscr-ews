@@ -1,30 +1,14 @@
-FROM alpine:latest
-
-RUN apk update \
-    && apk add --no-cache \
-        python3 \
-        gcc \
-        linux-headers \
-        python3-dev \
-        libxml2-dev \
-        libxslt-dev \
-        libffi-dev \
-        musl-dev \
-        openssl-dev \
-        curl
-
-RUN curl https://bootstrap.pypa.io/get-pip.py -o get-pip.py \
-    && python3 get-pip.py
-
-#RUN pip install \
-#        exchangelib \
-#        click \
-#        PyYaml \
-#        slugify
+FROM python:slim as builder
 
 COPY . /ews
-WORKDIR /ews
+WORKDIR /wheels
+RUN pip wheel /ews
 
-RUN pip install .
+FROM python:slim
+
+COPY --from=builder /wheels /wheels
+
+RUN pip install -f /wheels thumbscr-ews
+RUN rm -rf /wheels
 
 ENTRYPOINT ["thumbscr-ews"]
