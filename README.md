@@ -9,7 +9,7 @@
 <h4 align="center">A wrapper around the amazing <a href="https://ecederstrand.github.io/exchangelib/">exchangelib</a> to do some common EWS operations.</h4>
 <p align="center">
   <a href="https://twitter.com/_cablethief"><img src="https://img.shields.io/badge/twitter-%40_cablethief-blue.svg" alt="@_cablethief" height="18">
-  <a href="https://hub.docker.com/r/cablethief/thumbscr-ews"><img src="https://img.shields.io/docker/pulls/cablethief/thumbscr-ews.svg" alt="cablethief/thumbscr-ews">
+  <a href="https://hub.docker.com/r/cablethief/thumbscr-ews"><img src="https://img.shields.io/docker/pulls/cablethief/thumbscr-ews.svg" alt="cablethief/thumbscr-ews"></a>
 </p>
 <br>
 
