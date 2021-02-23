@@ -418,7 +418,7 @@ def gal(dump, search, verbose):
 
 
 
-@click.command(no_args_is_help=True)
+@cli.command(no_args_is_help=True)
 @click.option('--email-list', '-l', type=click.Path(exists=True), required=True, help='File of inboxes to check')
 @click.option('--full-tree', '-ft', is_flag=True, help='Try print folder tree for the account.')
 @click.option('--verbose', '-v',  is_flag=True, help='Verbose debugging, returns full contact objects.')
