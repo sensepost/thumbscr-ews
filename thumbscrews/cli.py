@@ -1,4 +1,5 @@
 import itertools
+import re
 import logging
 import os
 import string
@@ -7,7 +8,7 @@ from hashlib import md5
 import click
 import exchangelib
 import yaml as yamllib
-# from exchangelib import Account, EWSDateTime, FolderCollection, Q, Message
+from exchangelib import Account, EWSDateTime, FolderCollection, Q, Message
 from exchangelib import FileAttachment, Account, discover, BaseProtocol, Credentials, Configuration, DELEGATE
 # from exchangelib import Credentials, Account
 # from exchangelib import Account, DistributionList
@@ -180,12 +181,31 @@ def read(search, html, limit, folder, id, delegate):
         username = delegate
     else:
         username = tbestate.username
+    
+    try:
+        if tbestate.exch_host:
+            config = Configuration(server=tbestate.exch_host, credentials=credentials)
+            account = Account(username, config=config, autodiscover=False, access_type=DELEGATE)
+        else:
+            account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
+    except exchangelib.errors.ErrorNonExistentMailbox as neb:
+        print(f'[!] Mailbox does not exist for user: {username}')
+        exit()
+    except exchangelib.errors.UnauthorizedError as err:
+        print(f'[!] Invalid credentials for user: {username}')
+        exit()
+    except exchangelib.errors.TransportError:
+        print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
+        exit()
+    except requests.exceptions.RequestException:
+        print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
+        exit()
+    except urllib3.exceptions.NewConnectionError:
+        print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
+        exit()
+    except Exception as err:
+        print(f'[!] Something went wrong: {err}')
 
-    if tbestate.exch_host:
-        config = Configuration(server=tbestate.exch_host, credentials=credentials)
-        account = Account(username, config=config, autodiscover=False, access_type=DELEGATE)
-    else:
-        account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
 
     if folder:
         # pylint: disable=maybe-no-member
@@ -249,13 +269,32 @@ def getattachments(id, folder, path, search, limit, delegate):
     else:
         username = tbestate.username
 
-    if tbestate.exch_host:
-        config = Configuration(server=tbestate.exch_host, credentials=credentials)
-        account = Account(username,
-                          config=config, autodiscover=False, access_type=DELEGATE)
-    else:
-        account = Account(username,
-                          credentials=credentials, autodiscover=True, access_type=DELEGATE)
+    try:
+
+        if tbestate.exch_host:
+            config = Configuration(server=tbestate.exch_host, credentials=credentials)
+            account = Account(username,
+                              config=config, autodiscover=False, access_type=DELEGATE)
+        else:
+            account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
+
+    except exchangelib.errors.ErrorNonExistentMailbox as neb:
+        print(f'[!] Mailbox does not exist for user: {username}')
+        exit()
+    except exchangelib.errors.UnauthorizedError as err:
+        print(f'[!] Invalid credentials for user: {username}')
+        exit()
+    except exchangelib.errors.TransportError:
+        print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
+        exit()
+    except requests.exceptions.RequestException:
+        print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
+        exit()
+    except urllib3.exceptions.NewConnectionError:
+        print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
+        exit()
+    except Exception as err:
+        print(f'[!] Something went wrong: {err}')
 
     if folder:
         # pylint: disable=maybe-no-member
@@ -318,11 +357,23 @@ def folders(search, delegate):
     else:
         username = tbestate.username
 
-    if tbestate.exch_host:
-        config = Configuration(server=tbestate.exch_host, credentials=credentials)
-        account = Account(username, config=config, autodiscover=False, access_type=DELEGATE)
-    else:
-        account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
+    try:
+        if tbestate.exch_host:
+            config = Configuration(server=tbestate.exch_host, credentials=credentials)
+            account = Account(username, config=config, autodiscover=False, access_type=DELEGATE)
+        else:
+            account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
+    except exchangelib.errors.ErrorNonExistentMailbox as neb:
+        print(f'[!] Mailbox does not exist for user: {username}')
+        exit()
+    except exchangelib.errors.UnauthorizedError as err:
+        print(f'[!] Invalid credentials for user: {username}')
+        exit()
+    except exchangelib.errors.TransportError:
+        print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
+        exit()
+    except Exception as err:
+        print(f'[!] Something went wrong: {err}')
 
     # pylint: disable=maybe-no-member
     account.root.refresh()
@@ -358,11 +409,23 @@ def objects(limit, folder, delegate):
     else:
         username = tbestate.username
 
-    if tbestate.exch_host:
-        config = Configuration(server=tbestate.exch_host, credentials=credentials)
-        account = Account(username, config=config, autodiscover=False, access_type=DELEGATE)
-    else:
-        account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
+    try:
+        if tbestate.exch_host:
+            config = Configuration(server=tbestate.exch_host, credentials=credentials)
+            account = Account(username, config=config, autodiscover=False, access_type=DELEGATE)
+        else:
+            account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
+    except exchangelib.errors.ErrorNonExistentMailbox as neb:
+        print(f'[!] Mailbox does not exist for user: {username}')
+        exit()
+    except exchangelib.errors.UnauthorizedError as err:
+        print(f'[!] Invalid credentials for user: {username}')
+        exit()
+    except exchangelib.errors.TransportError:
+        print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
+        exit()
+    except Exception as err:
+        print(f'[!] Something went wrong: {err}')
 
     if folder:
         # pylint: disable=maybe-no-member
@@ -382,7 +445,9 @@ def objects(limit, folder, delegate):
               help='Dump all the gal by searching from aa to zz unless -s given')
 @click.option('--search', '-s', help='Search in gal for a specific string')
 @click.option('--verbose', '-v', is_flag=True, help='Verbose debugging, returns full contact objects.')
-def gal(dump, search, verbose):
+@click.option('--full', '-f', is_flag=True, required=False, default=True, help='Shows detailed information when dumping GAL.')
+@click.option('--output', '-o', type=click.File('w'), required=False, help='File to write output to.')
+def gal(dump, search, verbose, full, output):
     """
         Dump GAL using EWS.
         The slower technique used by https://github.com/dafthack/MailSniper
@@ -397,22 +462,58 @@ def gal(dump, search, verbose):
     credentials = Credentials(tbestate.username, tbestate.password)
     username = tbestate.username
 
-    if tbestate.exch_host:
-        config = Configuration(server=tbestate.exch_host, credentials=credentials)
-        account = Account(username, config=config, autodiscover=False, access_type=DELEGATE)
-    else:
-        account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
+    try:
+        if tbestate.exch_host:
+            config = Configuration(server=tbestate.exch_host, credentials=credentials)
+            account = Account(username, config=config, autodiscover=False, access_type=DELEGATE)
+        else:
+            account = Account(username, credentials=credentials, autodiscover=True, access_type=DELEGATE)
+
+    except exchangelib.errors.ErrorNonExistentMailbox as neb:
+        print(f'[!] Mailbox does not exist for user: {username}')
+        exit()
+    except exchangelib.errors.UnauthorizedError as err:
+        print(f'[!] Invalid credentials for user: {username}')
+        exit()
+    except exchangelib.errors.TransportError:
+        print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
+        exit()
+    except Exception as err:
+        print(f'[!] Something went wrong: {err}')
+
 
     atoz = [''.join(x) for x in itertools.product(string.ascii_lowercase, repeat=2)]
 
     if search:
         for names in ResolveNames(account.protocol).call(unresolved_entries=(search,)):
-            click.secho(f'{names}')
+            if output:
+                click.secho(f'{names}')
+                output.write(f'{names}\n')
+            else:
+                click.secho(f'{names}')
+
+    elif full:
+        atoz = [''.join(x) for x in itertools.product(string.ascii_lowercase, repeat=2)]
+        for entry in atoz:
+            for names in ResolveNames(account.protocol).call(unresolved_entries=(entry,)):
+                stringed = str(names)
+                found = re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', stringed)
+                for i in found:
+                    if output:
+                        click.secho(f'{i}')
+                        output.write(f'{i}\n')
+                    else:
+                        click.secho(f'{i}')
     else:
         atoz = [''.join(x) for x in itertools.product(string.ascii_lowercase, repeat=2)]
         for entry in atoz:
             for names in ResolveNames(account.protocol).call(unresolved_entries=(entry,)):
-                click.secho(f'{names}')
+                if output:
+                    click.secho(f'{names}')
+                    output.write(f'{names}\n')
+                else:
+                    click.secho(f'{names}')
+
 
     click.secho(f'-------------------------------------\n', dim=True)
 
@@ -435,11 +536,24 @@ def delegatecheck(email_list, verbose, full_tree, folder):
 
     credentials = Credentials(tbestate.username, tbestate.password)
 
-    if tbestate.exch_host:
-        config = Configuration(server=tbestate.exch_host, credentials=credentials)
-        account = Account(tbestate.username, config=config, autodiscover=False)
-    else:
-        account = Account(tbestate.username, credentials=credentials, autodiscover=True)
+    try:
+        if tbestate.exch_host:
+            config = Configuration(server=tbestate.exch_host, credentials=credentials)
+            account = Account(tbestate.username, config=config, autodiscover=False)
+        else:
+            account = Account(tbestate.username, credentials=credentials, autodiscover=True)
+
+    except exchangelib.errors.ErrorNonExistentMailbox as neb:
+        print(f'[!] Mailbox does not exist for user: {username}')
+        exit()
+    except exchangelib.errors.UnauthorizedError as err:
+        print(f'[!] Invalid credentials for user: {username}')
+        exit()
+    except exchangelib.errors.TransportError:
+        print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
+        exit()
+    except Exception as err:
+        print(f'[!] Something went wrong: {err}')
 
     ews_url = account.protocol.service_endpoint
     ews_auth_type = account.protocol.auth_type
