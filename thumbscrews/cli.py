@@ -203,6 +203,8 @@ def read(search, html, limit, folder, id, delegate):
     except urllib3.exceptions.NewConnectionError:
         print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
         exit()
+    except Exception as err:
+        print(f'[!] Something went wrong: {err}')
 
 
     if folder:
@@ -291,6 +293,8 @@ def getattachments(id, folder, path, search, limit, delegate):
     except urllib3.exceptions.NewConnectionError:
         print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
         exit()
+    except Exception as err:
+        print(f'[!] Something went wrong: {err}')
 
     if folder:
         # pylint: disable=maybe-no-member
@@ -368,6 +372,8 @@ def folders(search, delegate):
     except exchangelib.errors.TransportError:
         print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
         exit()
+    except Exception as err:
+        print(f'[!] Something went wrong: {err}')
 
     # pylint: disable=maybe-no-member
     account.root.refresh()
@@ -418,6 +424,8 @@ def objects(limit, folder, delegate):
     except exchangelib.errors.TransportError:
         print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
         exit()
+    except Exception as err:
+        print(f'[!] Something went wrong: {err}')
 
     if folder:
         # pylint: disable=maybe-no-member
@@ -437,8 +445,8 @@ def objects(limit, folder, delegate):
               help='Dump all the gal by searching from aa to zz unless -s given')
 @click.option('--search', '-s', help='Search in gal for a specific string')
 @click.option('--verbose', '-v', is_flag=True, help='Verbose debugging, returns full contact objects.')
-@click.option('--full', '-f', is_flag=True, required=False, default=True)
-@click.option('--output', '-o', type=click.File('w'), required=False)
+@click.option('--full', '-f', is_flag=True, required=False, default=True, help='Shows detailed information when dumping GAL.')
+@click.option('--output', '-o', type=click.File('w'), required=False, help='File to write output to.')
 def gal(dump, search, verbose, full, output):
     """
         Dump GAL using EWS.
@@ -470,6 +478,8 @@ def gal(dump, search, verbose, full, output):
     except exchangelib.errors.TransportError:
         print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
         exit()
+    except Exception as err:
+        print(f'[!] Something went wrong: {err}')
 
 
     atoz = [''.join(x) for x in itertools.product(string.ascii_lowercase, repeat=2)]
@@ -542,6 +552,8 @@ def delegatecheck(email_list, verbose, full_tree, folder):
     except exchangelib.errors.TransportError:
         print(f'[!] Can not reach target Exchange server: {tbestate.exch_host}')
         exit()
+    except Exception as err:
+        print(f'[!] Something went wrong: {err}')
 
     ews_url = account.protocol.service_endpoint
     ews_auth_type = account.protocol.auth_type
