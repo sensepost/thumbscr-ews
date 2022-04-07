@@ -213,9 +213,9 @@ def read(search, html, limit, folder, id, delegate):
     else:
         current_folder = account.inbox
 
-    click.secho(f'Amount of objects in Folder: {current_folder.total_count}', bold=True)
+    click.secho(f'Amount of objects in Folder: {current_folder.all().count()}', bold=True)
 
-    if current_folder.total_count == 0:
+    if current_folder.all().count() == 0:
         click.secho(f'Folder is empty so no need to continue.')
         exit()
 
