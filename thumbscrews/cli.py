@@ -213,6 +213,8 @@ def read(search, html, limit, folder, id, delegate):
     else:
         current_folder = account.inbox
 
+    click.secho(f'Amount of objects in Folder: {current_folder.total_count}', bold=True)
+
     if search:
         # mails = account.inbox.filter(Q(body__icontains=search) | Q(subject__icontains=search))
         # mails = account.inbox.filter(Q(body__icontains=search))
