@@ -4,7 +4,7 @@ COPY . /ews
 WORKDIR /wheels
 RUN pip wheel /ews
 
-FROM python:slim
+FROM python
 
 COPY --from=builder /wheels /wheels
 
