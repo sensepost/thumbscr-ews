@@ -1,4 +1,4 @@
-FROM python:slim as builder
+FROM python as builder
 
 COPY . /ews
 WORKDIR /wheels
