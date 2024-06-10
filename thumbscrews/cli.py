@@ -495,7 +495,7 @@ def gal(dump, search, verbose, full, output):
     elif full:
         atoz = [''.join(x) for x in itertools.product(string.ascii_lowercase, repeat=2)]
         for entry in atoz:
-            for names in ResolveNames(account.protocol).call(unresolved_entries=(entry,)):
+            for names in ResolveNames(account.protocol).call(unresolved_entries=(entry,), return_full_contact_data=True,):
                 stringed = str(names)
                 found = re.findall(r'[\w.+-]+@[\w-]+\.[\w.-]+', stringed)
                 for i in found:
