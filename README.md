@@ -38,13 +38,13 @@ Please see [Usage.md](USAGE.md).
 A docker container for `thumbscr-ews` exists and can be used with:
 
 ```text
-docker run --rm -ti cablethief/thumbscr-ews
+docker run --rm -ti ghcr.io/sensepost/thumbscr-ews:master
 ```
 
 If you do not want the docker to complain about timezones, set the TZ environment variable:
 
 ```text
-docker run --rm -ti -e TZ=Europe/London cablethief/thumbscr-ews 
+docker run --rm -ti -e TZ=Europe/London ghcr.io/sensepost/thumbscr-ews:master
 ```
 
 ### Installation - Other
